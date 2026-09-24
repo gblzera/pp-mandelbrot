@@ -150,6 +150,11 @@ dão **5,82×** contra os **7,94×** previstos por Amdahl. Essa lacuna de 2,12×
 objeto de estudo do Marco 2, e a Seção 7 mostra que a maior parte dela tem uma causa já
 identificada e medida.
 
+<figure class="grafico">
+<img src="resultados/amdahl_vs_medido.png">
+<figcaption><strong>Figura 1</strong> — Teto de Amdahl contra o speedup efetivamente medido. Até 2 workers as curvas coincidem; a partir de 4 a lacuna se abre, e é ela que o Marco 2 precisa explicar.</figcaption>
+</figure>
+
 ## 7. Plano de paralelização
 
 Ambas as frentes atacam o mesmo hotspot da mesma forma — distribuindo **linhas da imagem**
@@ -177,6 +182,11 @@ Resultados preliminares em 4000², speedup contra o baseline:
 | `guided` | 1,88× | 2,16× | 3,92× |
 | **`dynamic`** | 1,88× | **3,62×** | **5,82×** |
 
+<figure class="grafico">
+<img src="resultados/escalonamento_omp.png">
+<figcaption><strong>Figura 2</strong> — Speedup por política de escalonamento. As três curvas são indistinguíveis até 2 threads e divergem a partir de 4.</figcaption>
+</figure>
+
 Com 2 threads as três empatam — o conjunto é simétrico em torno de `y = 0`, então qualquer
 corte em duas metades é equilibrado por construção. A partir de 4 a diferença explode:
 `dynamic` entrega **2,17× mais desempenho que `static` no mesmo hardware**, apenas
@@ -200,6 +210,11 @@ elemento — e **`MPI_Reduce`** combina `checksum` e tempos. Cálculo e comunica
 cronometrados separadamente, e um campo `desbalanceamento` (razão entre o processo mais lento
 e o mais rápido) é reportado a cada execução.
 
+<figure class="largo">
+<img src="docs/fig-decomposicao-blocos.jpeg">
+<figcaption><strong>Figura 3</strong> — Por que a decomposição em blocos contíguos falha. Com 2 processos a simetria do conjunto em torno de <code>y = 0</code> equilibra as metades; com 4, as duas faixas centrais absorvem a figura inteira e as das pontas ficam ociosas.</figcaption>
+</figure>
+
 Resultados preliminares em 4000²:
 
 | Decomposição | `np` | Tempo (s) | Speedup | Eficiência | Desbalanceamento | Comunicação |
@@ -217,6 +232,11 @@ cíclica, que gasta 16 ms. São os processos rápidos **ociosos, bloqueados** no
 que é um ponto de sincronização. O campo `desbalanceamento` existe precisamente para separar
 espera de transferência; sem ele, atribuiríamos à rede um custo que é de distribuição de
 carga.
+
+<figure class="grafico">
+<img src="resultados/decomposicao_mpi.png">
+<figcaption><strong>Figura 4</strong> — As duas decomposições medidas lado a lado. A curva de blocos contíguos <strong>decresce</strong> entre 2 e 4 processos; a cíclica acompanha o ideal.</figcaption>
+</figure>
 
 ## 8. Reprodutibilidade e corretude
 

@@ -6,8 +6,8 @@ cd "$(dirname "$0")/.."
 MD=${1:?uso: ./scripts/pdf.sh docs/arquivo.md}
 BASE=${MD%.md}
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-pandoc "$MD" -f gfm -t html5 --standalone --embed-resources \
-       --css docs/estilo.css --metadata title="" -o "$BASE.html"
+pandoc "$MD" -f gfm+implicit_figures -t html5 --standalone --embed-resources \
+       --resource-path=. --css docs/estilo.css --metadata title="" -o "$BASE.html"
 "$CHROME" --headless --disable-gpu --no-pdf-header-footer \
           --print-to-pdf="$BASE.pdf" "file://$PWD/$BASE.html" 2>/dev/null
 rm -f "$BASE.html"

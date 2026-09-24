@@ -210,6 +210,41 @@ def escalabilidade_fraca(fraca):
     salvar(fig, "escalabilidade_fraca.png")
 
 
+def amdahl_vs_medido(forte, tam):
+    """Compara o teto de Amdahl com o speedup realmente medido."""
+    # f vem do perfilamento do baseline: ./bin/mandelbrot_seq 4000 4000 1000 --perfil
+    F = 0.9989
+    base = medias([l for l in forte if l["versao"] == "seq"], lambda l: l["tam"])
+    if tam not in base:
+        return
+    par = medias(
+        [l for l in forte if l["versao"] == "omp" and l["variante"] == "dynamic"
+         and l["tam"] == tam],
+        lambda l: l["config"],
+    )
+    if not par:
+        return
+    xs = sorted(par)
+    medido = [base[tam] / par[x] for x in xs]
+    teto = [1 / ((1 - F) + F / x) for x in xs]
+
+    fig, ax = plt.subplots(figsize=(6, 4.5))
+    ax.plot(xs, teto, marker="s", ls="--", label=f"Amdahl (f = {F})")
+    ax.plot(xs, medido, marker="o", label="medido (OpenMP dynamic)")
+    for x, t, m in zip(xs, teto, medido):
+        if t - m > 0.3:
+            ax.annotate("", xy=(x, m), xytext=(x, t),
+                        arrowprops=dict(arrowstyle="<->", color="#c33", lw=1))
+            ax.text(x + 0.12, (t + m) / 2, f"{t - m:.2f}x", color="#c33",
+                    fontsize=9, va="center")
+    ax.set(xlabel="número de workers", ylabel="speedup",
+           title=f"Teto de Amdahl x speedup medido — entrada {tam}")
+    ax.set_xticks(xs)
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+    salvar(fig, "amdahl_vs_medido.png")
+
+
 def main():
     linhas = carregar()
     forte = [l for l in linhas if l["experimento"] == "forte"]
@@ -226,6 +261,7 @@ def main():
         comparativo(forte, "mpi", ["bloco", "ciclica"], maior,
                     "decomposicao_mpi.png", "Decomposição de domínio (MPI)")
         comunicacao(forte, maior)
+        amdahl_vs_medido(forte, maior)
     escalabilidade_fraca(fraca)
 
 
