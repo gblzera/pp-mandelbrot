@@ -10,7 +10,7 @@ Gabriel.
 | Integrante | Matrícula | Frente |
 |---|---|---|
 | Gabriel Henrique Kuhn Paz | 2612130027 | Baseline e Perfilamento **+** Versão MPI (memória distribuída) |
-| Lara Alves | *(a preencher)* | Versão OpenMP (memória compartilhada) |
+| Lara Alves | 2322130053 | Versão OpenMP (memória compartilhada) |
 
 **Problema:** nº 3 — Conjunto de Mandelbrot.
 **Turma:** CCONM3B (noturno) — Programação Paralela (CCO085), IESB 2026/2.

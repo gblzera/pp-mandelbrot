@@ -10,7 +10,7 @@ acumulada pelo primeiro integrante:
 | Integrante | Matrícula | Frente (Seção 3) |
 |---|---|---|
 | Gabriel Henrique Kuhn Paz | 2612130027 | Baseline e Perfilamento **+** Versão MPI (memória distribuída) |
-| Lara Alves | — | Versão OpenMP (memória compartilhada) |
+| Lara Alves | 2322130053 | Versão OpenMP (memória compartilhada) |
 
 O grupo não conseguiu fechar o trio e a possibilidade de entrega em dupla foi consultada
 previamente ao professor. A arguição cruzada permanece aplicável: cada integrante pode ser

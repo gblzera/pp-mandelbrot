@@ -10,7 +10,7 @@
 | Integrante | Frente (Seção 3 das orientações) |
 |---|---|
 | Gabriel Henrique Kuhn Paz — mat. 2612130027 | Baseline e Perfilamento + Versão MPI |
-| Lara Alves | Versão OpenMP |
+| Lara Alves — mat. 2322130053 | Versão OpenMP |
 
 *Grupo de dois integrantes. O trio não fechou e a entrega em dupla foi consultada
 previamente ao professor; as três frentes estão cobertas, com a de MPI acumulada
