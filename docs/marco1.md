@@ -1,14 +1,21 @@
 # Marco 1 — Paralelização do Conjunto de Mandelbrot
 
-Programação Paralela (CCO085) · IESB 2026/2 · Campus Asa Sul · Turma CCONM3B (noturno) · Prof. Rodrigo Gonçalves · 23/09/2026
+Programação Paralela (CCO085) · IESB 2026/2 · Campus Asa Sul · Turma CCONM3B (noturno) · Prof. Rodrigo Gonçalves · 24/09/2026
 
 ## 1. Identificação
 
+**Grupo de dois integrantes.** As três frentes da Seção 3 estão cobertas, com a de MPI
+acumulada pelo primeiro integrante:
+
 | Integrante | Matrícula | Frente (Seção 3) |
 |---|---|---|
-| Gabriel Henrique Kuhn Paz | 2612130027 | Baseline e Perfilamento |
+| Gabriel Henrique Kuhn Paz | 2612130027 | Baseline e Perfilamento **+** Versão MPI (memória distribuída) |
 | Lara Alves | — | Versão OpenMP (memória compartilhada) |
-| *(em aberto)* | — | Versão MPI (memória distribuída) |
+
+O grupo não conseguiu fechar o trio e a possibilidade de entrega em dupla foi consultada
+previamente ao professor. A arguição cruzada permanece aplicável: cada integrante pode ser
+questionado sobre frente que não conduziu — e, no caso do primeiro integrante, sobre a frente
+de OpenMP, que é a única que não é sua.
 
 **Problema nº 3 — Conjunto de Mandelbrot.** Repositório:
 `github.com/gblzera/pp-mandelbrot` (privado, acesso concedido ao professor).
@@ -235,7 +242,6 @@ escalabilidade forte e fraca gerando CSV, com os gráficos produzidos por
 `./scripts/graficos.py`.
 
 Pendências até o Marco 2: substituir o baseline provisório pelo código oficial e repetir toda
-a campanha; refazer as medições definitivas na máquina do laboratório; completar o trio e
-atribuir formalmente a frente de MPI; e aprofundar a discussão do afastamento em relação a
-Amdahl, decompondo a lacuna de 2,12× entre desbalanceamento residual, sincronização e limite
-de banda de memória.
+a campanha; refazer as medições definitivas na máquina do laboratório; e aprofundar a
+discussão do afastamento em relação a Amdahl, decompondo a lacuna de 2,12× entre
+desbalanceamento residual, sincronização e limite de banda de memória.

@@ -9,13 +9,12 @@
 
 | Integrante | Frente (Seção 3 das orientações) |
 |---|---|
-| Gabriel Henrique Kuhn Paz — mat. 2612130027 | Baseline e Perfilamento |
-| Lara Alves | Versão OpenMP *(a confirmar)* |
-| *(em aberto)* | Versão MPI |
+| Gabriel Henrique Kuhn Paz — mat. 2612130027 | Baseline e Perfilamento + Versão MPI |
+| Lara Alves | Versão OpenMP |
 
-*Grupo em formação — duas frentes definidas, a de MPI em aberto. Consultamos a
-possibilidade de realização em dupla; nesse caso os dois integrantes assumem a
-frente restante e respondem por ela na arguição.*
+*Grupo de dois integrantes. O trio não fechou e a entrega em dupla foi consultada
+previamente ao professor; as três frentes estão cobertas, com a de MPI acumulada
+pelo primeiro integrante.*
 
 ## Problema escolhido
 
