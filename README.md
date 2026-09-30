@@ -114,3 +114,9 @@ make perfil && ./bin/mandelbrot_seq_prof 2000 2000 1000 && gprof ./bin/mandelbro
 O `--perfil` dá a tabela por trecho do código provisório. Quando o sequencial
 oficial chegar, o `gprof` (ou `perf record` no laboratório) dá a granularidade
 por função exigida no Marco 1.
+
+## Animação do modelo
+
+`animacao/` traz três cenas em Manim explicando o modelo matemático, o cálculo sequencial e
+as duas decomposições de MPI. Vídeos prontos em `animacao/videos/`; ver
+[animacao/README.md](animacao/README.md) para regerar.
