@@ -249,9 +249,9 @@ ele, atribuiríamos à rede um custo que é de distribuição de carga.
 - **Já funcionando.** As três versões compilam com `make` puro no ambiente oficial, passam na
   validação, e `./scripts/medir.sh` cobre escalabilidade forte e fraca gerando CSV, com
   gráficos por `./scripts/graficos.py`.
-- **Material de apoio.** `animacao/mandelbrot.py` gera, com a biblioteca Manim, três cenas
-  que animam o modelo: a órbita e o critério de escape, o cálculo de `k(c)` pixel a pixel, e
-  a comparação entre as duas decomposições.
-- **Pendências até o Marco 2.** Substituir o baseline provisório pelo código oficial e
-  repetir a campanha; refazer as medições no laboratório; decompor a lacuna de 2,12× entre
-  desbalanceamento residual, sincronização e limite de banda de memória.
+- **Material de apoio.** `animacao/mandelbrot.py` gera, em Manim, uma animação de ~35 s em
+  três atos: o modelo e o critério de escape, o cálculo de `k(c)` linha a linha, e as duas
+  decomposições de MPI, com as barras de trabalho calculadas da malha real.
+- **Pendências até o Marco 2.** Trocar o baseline provisório pelo código oficial e repetir a
+  campanha; medir no laboratório; decompor a lacuna de 2,12× entre desbalanceamento
+  residual, sincronização e banda de memória.
