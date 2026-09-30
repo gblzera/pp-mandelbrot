@@ -27,46 +27,133 @@ de OpenMP, que é a única que não é sua.
 > disponibilizado, ele substitui o provisório e passa a definir o gabarito; o instrumental
 > aqui descrito é independente do kernel e será reaplicado sem alterações.
 
-## 2. O algoritmo sequencial
+## 2. O modelo matemático e o algoritmo
 
-Para cada ponto `c` de uma grade que cobre a região `x ∈ [-2, 1]`, `y ∈ [-1.5, 1.5]` do plano
-complexo, itera-se a recorrência `z ← z² + c` a partir de `z = 0`, contando quantas iterações
-são necessárias até `|z|² > 4` (o ponto escapa, está fora do conjunto) ou até atingir
-`max_iter` (o ponto é considerado pertencente ao conjunto). A saída é uma matriz
-`largura × altura` de contagens de iteração, e o `checksum` — a soma de todas as contagens —
-é o critério objetivo de corretude usado no projeto.
+### 2.1 O conjunto de Mandelbrot
 
-### Complexidade assintótica
+Para cada número complexo `c`, considere a família de funções quadráticas
+`f_c(z) = z² + c` e a **órbita do zero** sob iteração de `f_c`:
 
-Seja `W` a largura, `H` a altura e `K` o `max_iter`. O laço de escape de um pixel custa
-`O(1)` a `O(K)`, com custo constante por iteração (cinco multiplicações e três somas em ponto
-flutuante). Logo:
+```
+z₀ = 0        z₁ = c        z₂ = c² + c       …       z_{n+1} = z_n² + c
+```
 
-- **Pior caso:** `Θ(W · H · K)` — atingido se todos os pixels pertencerem ao conjunto;
-- **Caso real:** `Θ(W · H · k̄)`, onde `k̄` é o número médio de iterações por pixel, que
-  depende da região do plano amostrada e de `K`, **não** da resolução.
+O conjunto de Mandelbrot é o conjunto dos parâmetros para os quais essa órbita **não diverge**:
 
-O `checksum` mede `k̄` diretamente: `k̄ = checksum / (W·H)`. Nas três entradas medidas,
-`k̄ = 172,3`, `172,5` e `172,5` — constante, como previsto. Confirma-se também a linearidade
-no número de pixels: quadruplicando `W·H`, o tempo cresce `4,08×` e depois `3,97×`.
+```
+M = { c ∈ ℂ : a sequência (z_n) permanece limitada }
+```
+
+Ele não é definido por uma fórmula fechada, e sim por um critério de comportamento
+assintótico — é por isso que só se pode decidir sobre um ponto **iterando**, e é daí que vem
+todo o custo computacional do problema.
+
+### 2.2 O critério de escape e o raio 2
+
+O que torna o problema tratável é um resultado clássico: **se em algum momento `|z_n| > 2`,
+a órbita necessariamente diverge.** O argumento é curto. Todo `c ∈ M` satisfaz `|c| ≤ 2`;
+assim, se `|z| > 2` e `|z| ≥ |c|`, então
+
+```
+|z² + c| ≥ |z|² − |c| ≥ |z|² − |z| = |z| · (|z| − 1) > |z|
+```
+
+ou seja, o módulo cresce estritamente a cada passo, e o crescimento se acelera — a divergência
+é inevitável. Logo o teste `|z| > 2` é uma **condição suficiente de divergência**, não uma
+heurística: o raio 2 não é um parâmetro ajustável, é o valor exato que o teorema fornece.
+
+Duas consequências práticas orientam a implementação:
+
+- o código testa `|z|² > 4` em vez de `|z| > 2`, porque elevar ao quadrado evita a raiz
+  quadrada e o predicado é logicamente idêntico;
+- o teste é **assimétrico**: o escape é demonstrável em tempo finito, mas a permanência não.
+  Nenhum número finito de iterações prova que `c ∈ M`.
+
+É essa assimetria que obriga a existência do `max_iter`: ele trunca a decisão. O que o
+programa calcula é a **função de tempo de escape**
+
+```
+k(c) = min { n ≤ K : |z_n| > 2 },  ou K se não houver escape até K
+```
+
+e o conjunto que ele desenha é uma **superaproximação** de `M` — todo ponto classificado
+como interior pode ser um ponto exterior de escape lento. Aumentar `K` refina a aproximação e
+aumenta o custo proporcionalmente.
+
+### 2.3 Do modelo ao código
+
+Escrevendo `z = x + yi` e `c = a + bi`, a multiplicação complexa se abre em aritmética real:
+
+```
+z² + c = (x² − y² + a) + (2xy + b) i
+```
+
+que é exatamente o corpo do laço, sem nenhuma biblioteca de números complexos:
+
+```cpp
+double tmp = zr * zr - zi * zi + cr;   // parte real
+zi         = 2.0 * zr * zi + ci;       // parte imaginária
+zr         = tmp;                      // atualização simultânea
+```
+
+A variável `tmp` existe porque a atualização é **simultânea**: a nova parte imaginária depende
+do `zr` **antigo**. Sobrescrever `zr` antes de calcular `zi` produziria outro sistema
+dinâmico. O corpo custa `Θ(1)` — três multiplicações (`zr²`, `zi²`, `zr·zi`; a multiplicação
+por 2 é convertida em soma pelo compilador) e quatro adições ou subtrações, reaproveitando
+`zr²` e `zi²` entre o teste de escape e a atualização.
+
+O domínio amostrado, `x ∈ [-2, 1]` e `y ∈ [-1.5, 1.5]`, contém `M` inteiro: o conjunto está
+contido no disco `|c| ≤ 2`, sua extensão real é `[-2 , 0.25]` e a imaginária não passa de
+`±1.13`. A grade é uniforme, com
+`c_{i,j} = (x_min + Δx · i/(W−1)) + (y_min + Δy · j/(H−1)) i`.
+
+### 2.4 Complexidade assintótica
+
+Seja `W` a largura, `H` a altura e `K` o `max_iter`. Como o laço de escape de um pixel custa
+`O(1)` a `O(K)` com corpo de custo constante:
+
+- **Pior caso:** `Θ(W · H · K)` — atingido se todos os pixels pertencessem a `M`;
+- **Caso real:** `Θ(W · H · k̄)`, onde `k̄` é o tempo de escape médio sobre a região
+  amostrada. Ele depende do domínio e de `K`, **não** da resolução.
+
+O `checksum` não é só um código de verificação: ele é `Σ k(c)`, ou seja, **o trabalho total
+do programa**, e `k̄ = checksum / (W·H)` é uma soma de Riemann que estima a média de `k` sobre
+o domínio. Refinar a grade não muda essa média — apenas a estima melhor. Medimos
+`k̄ = 172,3`, `172,5` e `172,5` nas três entradas: constante, como o modelo prevê, contra um
+`K = 1000`. Confirma-se também a linearidade no número de pixels: quadruplicando `W·H`, o
+tempo cresce `4,08×` e depois `3,97×`.
 
 Memória: `W·H` inteiros de 4 bytes (64 MB em 4000×4000), escritos uma vez, sequencialmente.
 O acesso é `iteracoes[j·W + i]` com `i` no laço interno, ou seja, percorre a memória na ordem
 em que ela está disposta — localidade espacial ótima, sem *cache thrashing*.
 
-### Estrutura de dependências
+### 2.5 O que o modelo impõe à paralelização
 
-Dentro de um pixel, a recorrência é uma **cadeia estritamente serial**: `z_{n+1}` depende de
-`z_n`. Não há paralelismo em nível de instrução a extrair de um pixel, e o número de
-iterações não é conhecido de antemão. **Entre pixels, porém, não há dependência alguma:**
-cada `c` é independente de todos os outros, e a única escrita compartilhada é a acumulação
-do `checksum`. É um problema *embaraçosamente paralelo* na dimensão dos pixels — e é aí que
-toda a paralelização vai atuar.
+Três propriedades matemáticas determinam tudo o que vem nas Seções 6 e 7.
 
-O ponto não trivial é que **o custo por pixel varia em ordens de grandeza**: pontos dentro do
-conjunto gastam as `K` iterações completas, pontos distantes escapam em poucas. E os pixels
-caros não estão espalhados — concentram-se no miolo da imagem. Isso faz do balanceamento de
-carga, e não da comunicação, o problema central deste projeto.
+**A órbita é serial; os parâmetros são independentes.** Dentro de um pixel, `z_{n+1}` depende
+de `z_n`: é uma cadeia estritamente serial, sem paralelismo em nível de instrução a extrair, e
+com número de iterações desconhecido de antemão. Já `k(c₁)` e `k(c₂)` não se comunicam para
+`c₁ ≠ c₂`. O problema é *embaraçosamente paralelo* **na dimensão dos parâmetros**, e é aí que
+toda a paralelização atua. A única escrita compartilhada é a acumulação do `checksum`.
+
+**`k` é radicalmente não uniforme, e de forma geometricamente estruturada.** Para `c ∈ M`,
+`k(c) = K`; para `c` distante, `k(c)` é de poucas unidades. Como `M` é conexo e tem área
+positiva concentrada em torno da cardioide principal, os pixels caros **formam uma figura
+compacta no miolo do domínio** — não estão espalhados. É esse fato, e não o volume de dados,
+que faz do balanceamento de carga o problema central deste projeto.
+
+**`M` é simétrico em relação ao eixo real.** Como `f_c̄(z̄) = conj(f_c(z))`, a órbita de `c̄` é
+a conjugada da órbita de `c`, e portanto `k(a + bi) = k(a − bi)`. Com o domínio centrado em
+`y = 0`, **qualquer divisão em duas metades horizontais é exatamente equilibrada** — o que
+explica, por teorema e não por coincidência, o empate entre as políticas com 2 threads
+(Seção 7.1) e o bom desempenho da decomposição em blocos com `np = 2` (Seção 7.2). A simetria
+se perde a partir de 4 divisões, e é exatamente aí que o desbalanceamento aparece.
+
+**Consequência numérica.** A fronteira `∂M` é um fractal, e perto dela `k` é extremamente
+sensível: uma perturbação de arredondamento muda a contagem de iteração. Isso não é
+curiosidade teórica — foi o que observamos ao ver o `checksum` divergir em 4 422 unidades
+entre dois compiladores, discutido na Seção 8.
 
 ## 3. Metodologia de medição
 
@@ -140,10 +227,9 @@ Tomando a maior entrada (4000², a mais representativa da carga de trabalho real
 | → ∞ | 909× | — |
 
 **Estes números são um teto, não uma previsão.** A fração serial medida contabiliza apenas os
-trechos explicitamente sequenciais (alocação e acumulação final); ela ignora todo o custo
-*introduzido* pela paralelização — sincronização, comunicação, desbalanceamento de carga,
-tráfego de coerência de cache. O valor de 909× no limite é um artefato dessa contabilidade e
-não deve ser lido como meta.
+trechos explicitamente sequenciais (alocação e acumulação final) e ignora todo o custo
+*introduzido* pela paralelização — sincronização, comunicação, desbalanceamento, coerência de
+cache. O valor de 909× é artefato dessa contabilidade, não meta.
 
 A utilidade real da estimativa é servir de régua: nossos primeiros resultados com 8 threads
 dão **5,82×** contra os **7,94×** previstos por Amdahl. Essa lacuna de 2,12× é exatamente o
@@ -187,20 +273,19 @@ Resultados preliminares em 4000², speedup contra o baseline:
 <figcaption><strong>Figura 2</strong> — Speedup por política de escalonamento. As três curvas são indistinguíveis até 2 threads e divergem a partir de 4.</figcaption>
 </figure>
 
-Com 2 threads as três empatam — o conjunto é simétrico em torno de `y = 0`, então qualquer
-corte em duas metades é equilibrado por construção. A partir de 4 a diferença explode:
-`dynamic` entrega **2,17× mais desempenho que `static` no mesmo hardware**, apenas
-distribuindo melhor o trabalho. É a confirmação experimental de que o gargalo é
-desbalanceamento de carga.
+Com 2 threads as três empatam, pela simetria demonstrada na Seção 2.5. A partir de 4 a
+diferença explode: `dynamic` entrega **2,17× mais desempenho que `static` no mesmo
+hardware**, apenas distribuindo melhor o trabalho. É a confirmação experimental de que o
+gargalo é desbalanceamento de carga.
 
 ### 7.2 MPI — memória distribuída
 
 Decomposição de domínio por linhas, com **duas variantes selecionáveis em tempo de execução**
 (`DECOMP=bloco|ciclica`), para que ambas as curvas saiam da mesma campanha:
 
-- **`bloco`** — faixas contíguas. É a decomposição estática ingênua e, para o Mandelbrot, o
-  pior caso possível: as linhas caras concentram-se no meio da imagem e o processo do meio
-  vira o gargalo. Mantida deliberadamente como termo de comparação;
+- **`bloco`** — faixas contíguas. É a decomposição estática ingênua e, pela concentração
+  geométrica de `k` descrita na Seção 2.5, o pior caso possível para este problema. Mantida
+  deliberadamente como termo de comparação;
 - **`ciclica`** — linhas intercaladas com passo `nprocs`, que distribui as linhas caras entre
   todos os processos.
 
@@ -257,11 +342,10 @@ modo que as razões de speedup permanecem válidas.
 ## 9. Situação e próximos passos
 
 Já funcionando: as três versões compilam com `make` puro no ambiente oficial, passam na
-validação elemento a elemento, e a campanha de medição (`./scripts/medir.sh`) cobre
-escalabilidade forte e fraca gerando CSV, com os gráficos produzidos por
-`./scripts/graficos.py`.
+validação elemento a elemento, e `./scripts/medir.sh` cobre escalabilidade forte e fraca
+gerando CSV, com os gráficos produzidos por `./scripts/graficos.py`.
 
-Pendências até o Marco 2: substituir o baseline provisório pelo código oficial e repetir toda
-a campanha; refazer as medições definitivas na máquina do laboratório; e aprofundar a
-discussão do afastamento em relação a Amdahl, decompondo a lacuna de 2,12× entre
-desbalanceamento residual, sincronização e limite de banda de memória.
+Pendências até o Marco 2: substituir o baseline provisório pelo código oficial e repetir a
+campanha; refazer as medições definitivas na máquina do laboratório; e decompor a lacuna de
+2,12× em relação a Amdahl entre desbalanceamento residual, sincronização e limite de banda de
+memória.
