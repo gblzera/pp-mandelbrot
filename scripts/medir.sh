@@ -2,8 +2,9 @@
 # Campanha de medição -> resultados/medicoes.csv
 #
 # Protocolo: cada configuração roda REPETICOES vezes, após AQUECIMENTO execuções
-# descartadas. Registra escalabilidade FORTE (entrada fixa, mais workers) e
-# FRACA (entrada cresce com os workers, carga por worker constante).
+# descartadas. Registra escalabilidade FORTE (entrada fixa, mais workers),
+# FRACA (entrada cresce com os workers, carga por worker constante) e o TETO da
+# máquina (N cópias independentes do sequencial rodando ao mesmo tempo).
 # Rodar no ambiente de referência (laboratório ou contêiner Docker).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -12,11 +13,12 @@ REPETICOES=${REPETICOES:-5}
 AQUECIMENTO=${AQUECIMENTO:-1}
 TAMANHOS=("1000 1000 1000" "2000 2000 1000" "4000 4000 1000")
 THREADS=(1 2 4 8)
-PROCESSOS=(1 2 4)
+PROCESSOS=(1 2 4 8)
 ESCALONAMENTOS=(static dynamic guided)
 DECOMPOSICOES=(bloco ciclica)
 LADO_BASE=${LADO_BASE:-1000}      # escalabilidade fraca
 MAX_ITER_FRACA=1000
+TAM_TETO="4000 4000 1000"         # a entrada em que o Amdahl é comparado
 
 SAIDA=resultados/medicoes.csv
 mkdir -p resultados
@@ -69,6 +71,29 @@ for p in "${PROCESSOS[@]}"; do
     lado=$(python3 -c "import math;print(round($LADO_BASE*math.sqrt($p)))")
     executa fraca mpi "$p" ciclica "$lado $lado $MAX_ITER_FRACA" \
         env DECOMP=ciclica mpirun --oversubscribe -np "$p" ./bin/mandelbrot_mpi
+done
+
+echo "== Teto da máquina: N cópias independentes do sequencial ao mesmo tempo =="
+# Sem comunicação, sem sincronização e sem divisão de trabalho: a perda que
+# sobra aqui é do hardware (núcleos heterogêneos, frequência, recursos
+# compartilhados), não da paralelização. Uma linha por cópia.
+COPIAS=$(mktemp -d)
+trap 'rm -rf "$COPIAS"' EXIT
+read -r L A M <<< "$TAM_TETO"
+for n in "${THREADS[@]}"; do
+    for ((r = -AQUECIMENTO; r < REPETICOES; r++)); do
+        for ((i = 1; i <= n; i++)); do
+            ./bin/mandelbrot_seq "$L" "$A" "$M" > "$COPIAS/$i" &
+        done
+        wait
+        ((r < 0)) && continue
+        for ((i = 1; i <= n; i++)); do
+            linha=$(< "$COPIAS/$i")
+            printf 'teto,seq,%s,copia%s,%s,%s,%s,%s,%s,%s,,,\n' "$n" "$i" "$L" "$A" "$M" "$r" \
+                "$(campo "$linha" checksum)" "$(campo "$linha" tempo)" >> "$SAIDA"
+        done
+    done
+    echo "  ok: teto seq copias=$n ${L}x${A}"
 done
 
 echo

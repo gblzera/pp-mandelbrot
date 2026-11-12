@@ -9,6 +9,7 @@ Produz em resultados/:
   decomposicao_mpi.png         bloco x cíclica
   comunicacao_mpi.png          fração do tempo gasta em comunicação
   escalabilidade_fraca.png     eficiência fraca: T_base / T_p
+  amdahl_vs_medido.png         Amdahl x capacidade da máquina x medido
 """
 import csv
 import os
@@ -210,8 +211,27 @@ def escalabilidade_fraca(fraca):
     salvar(fig, "escalabilidade_fraca.png")
 
 
-def amdahl_vs_medido(forte, tam):
-    """Compara o teto de Amdahl com o speedup realmente medido."""
+def capacidade(copias):
+    """N -> soma das velocidades de N cópias simultâneas, relativas a uma sozinha.
+
+    É o speedup que um escalonamento perfeito alcançaria nesta máquina: cada
+    núcleo entra com a velocidade que realmente tem quando todos estão ocupados.
+    """
+    sozinha = [l["tempo"] for l in copias if l["config"] == 1]
+    if not sozinha:
+        return {}
+    t1 = sum(sozinha) / len(sozinha)
+    por_rodada = defaultdict(float)
+    for l in copias:
+        por_rodada[(l["config"], l["repeticao"])] += t1 / l["tempo"]
+    acc = defaultdict(list)
+    for (n, _), s in por_rodada.items():
+        acc[n].append(s)
+    return {n: sum(v) / len(v) for n, v in acc.items()}
+
+
+def amdahl_vs_medido(forte, copias, tam):
+    """Compara o teto de Amdahl e a capacidade da máquina com o speedup medido."""
     # f vem do perfilamento do baseline: ./bin/mandelbrot_seq 4000 4000 1000 --perfil
     F = 0.9989
     base = medias([l for l in forte if l["versao"] == "seq"], lambda l: l["tam"])
@@ -227,9 +247,14 @@ def amdahl_vs_medido(forte, tam):
     xs = sorted(par)
     medido = [base[tam] / par[x] for x in xs]
     teto = [1 / ((1 - F) + F / x) for x in xs]
+    cap = capacidade([l for l in copias if l["tam"] == tam])
 
     fig, ax = plt.subplots(figsize=(6, 4.5))
     ax.plot(xs, teto, marker="s", ls="--", label=f"Amdahl (f = {F})")
+    if cap:
+        ns = sorted(cap)
+        ax.plot(ns, [cap[n] for n in ns], marker="^", ls=":",
+                label="capacidade da máquina (N cópias do seq)")
     ax.plot(xs, medido, marker="o", label="medido (OpenMP dynamic)")
     for x, t, m in zip(xs, teto, medido):
         if t - m > 0.3:
@@ -249,6 +274,7 @@ def main():
     linhas = carregar()
     forte = [l for l in linhas if l["experimento"] == "forte"]
     fraca = [l for l in linhas if l["experimento"] == "fraca"]
+    copias = [l for l in linhas if l["experimento"] == "teto"]
     tamanhos = sorted({l["tam"] for l in forte}, key=lambda t: int(t.split("x")[0]))
     maior = tamanhos[-1] if tamanhos else None
 
@@ -261,7 +287,7 @@ def main():
         comparativo(forte, "mpi", ["bloco", "ciclica"], maior,
                     "decomposicao_mpi.png", "Decomposição de domínio (MPI)")
         comunicacao(forte, maior)
-        amdahl_vs_medido(forte, maior)
+        amdahl_vs_medido(forte, copias, maior)
     escalabilidade_fraca(fraca)
 
 
