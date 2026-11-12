@@ -5,6 +5,7 @@ Projeto acadêmico da disciplina de Programação Paralela: paralelização do
 e **MPI** (memória distribuída), a partir de um código sequencial de referência.
 
 Integrantes e frentes em [AUTORES.md](AUTORES.md). Proposta em [docs/proposta.md](docs/proposta.md).
+Documentos dos marcos: [Marco 1](docs/marco1.pdf) e [Marco 2](docs/marco2.md).
 
 > **Atenção:** o código em `src/seq/` é **provisório**, escrito apenas para
 > montar e testar o pipeline (compilação, validação, medição, gráficos). Quando
@@ -76,8 +77,10 @@ make validar        # ou ./scripts/validar.sh
 ```
 
 Compara a matriz de iterações **elemento a elemento** contra o baseline, em todas
-as combinações de threads, escalonamentos, processos e decomposições. Não usa
-checksum — somas podem colidir. Sai com código != 0 no primeiro desvio.
+as combinações de threads, escalonamentos, processos e decomposições. Só o
+checksum não bastaria — somas podem colidir. Ele também é conferido, porque uma
+corrida no acumulador erra a soma sem alterar a matriz. Sai com código != 0 se
+alguma configuração divergir.
 
 ## Medir e gerar gráficos
 
@@ -85,12 +88,19 @@ checksum — somas podem colidir. Sai com código != 0 no primeiro desvio.
 make medir          # scripts/medir.sh + scripts/graficos.py
 ```
 
+As medições do projeto foram feitas na imagem oficial da disciplina
+(`iesb/pp-lab:2026.2`), que **não traz matplotlib**. Nela, rode só
+`./scripts/medir.sh` e gere os gráficos fora, com `python3 scripts/graficos.py`.
+Na imagem deste repositório o `make medir` faz as duas etapas.
+
 `scripts/medir.sh` gera `resultados/medicoes.csv` com escalabilidade **forte**
 (entrada fixa, mais workers) e **fraca** (entrada ∝ √p, carga por worker
 constante), varrendo os três escalonamentos de OpenMP e as duas decomposições de
-MPI. Protocolo no topo do script: 5 repetições por configuração, 1 execução de
-aquecimento descartada, 3 tamanhos de entrada. Ao final, falha se algum tamanho
-produzir mais de um checksum.
+MPI. Mede também o **teto da máquina**: N cópias independentes do sequencial
+rodando ao mesmo tempo, sem comunicação nem sincronização — o que se perde ali é
+do hardware, não da paralelização. Protocolo no topo do script: 5 repetições por
+configuração, 1 execução de aquecimento descartada, 3 tamanhos de entrada. Ao
+final, falha se algum tamanho produzir mais de um checksum.
 
 `scripts/graficos.py` gera em `resultados/`:
 
@@ -103,6 +113,7 @@ produzir mais de um checksum.
 | `decomposicao_mpi.png` | blocos contíguos × linhas intercaladas |
 | `comunicacao_mpi.png` | fração do tempo gasta em comunicação |
 | `escalabilidade_fraca.png` | eficiência fraca por número de workers |
+| `amdahl_vs_medido.png` | teto de Amdahl × capacidade da máquina × speedup medido |
 
 ## Perfilar (frente de baseline)
 

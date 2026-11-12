@@ -1,6 +1,6 @@
 // ============================================================================
 // Versão MPI (memória distribuída).
-// Será refinada sobre o código sequencial oficial do professor.
+// Parte do sequencial provisório de src/seq/; o oficial ainda não foi recebido.
 //
 // Decisões documentadas no relatório:
 //  - decomposição de domínio por blocos contíguos de linhas. É a decomposição

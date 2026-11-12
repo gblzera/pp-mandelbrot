@@ -1,6 +1,6 @@
 // ============================================================================
 // Versão OpenMP (memória compartilhada).
-// Será refinada sobre o código sequencial oficial do professor.
+// Parte do sequencial provisório de src/seq/; o oficial ainda não foi recebido.
 //
 // Decisões documentadas no relatório:
 //  - paralelização do laço externo (linhas): cada linha é independente;
