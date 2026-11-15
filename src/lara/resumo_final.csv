@@ -1,0 +1,8 @@
+versao,modelo,execucoes,tempo_medio,calculo_medio,comunicacao_media,desbalanceamento_medio,speedup,eficiencia_percentual
+hibrido,mestre,1000,0.042554,0.041826,0.042402,1.012,3.116,51.93
+hibrido,todos,1000,0.027969,0.027278,0.002841,1.087,4.741,79.01
+mpi,mestre,1000,0.043569,0.042653,0.043531,1.080,3.043,60.86
+mpi,todos,1000,0.036307,0.035672,0.002366,1.051,3.652,91.30
+openmp,coordenador,1000,0.057253,0.057253,0.000000,-1.000,2.316,57.90
+openmp,todos,1000,0.045891,0.045891,0.000000,-1.000,2.889,72.23
+sequencial,unico,1000,0.132588,0.132588,0.000000,1.000,1.000,100.00
