@@ -1,0 +1,41 @@
+## Análise experimental de escalabilidade — Lei de Amdahl
+
+### Metodologia
+
+Foi realizado um experimento de escalabilidade utilizando a implementação OpenMP do conjunto de Mandelbrot. O objetivo foi avaliar o impacto do aumento da quantidade de threads sobre o tempo de execução, o speedup e a eficiência.
+
+O experimento utilizou uma imagem de 400 × 600 pixels, com limite de 1.000 iterações por pixel. A implementação empregou a diretiva `parallel for`, com `collapse(2)` e escalonamento dinâmico com blocos de 16 iterações.
+
+Foram avaliadas configurações com 1, 2, 4, 6, 8, 12 e 16 threads. Cada configuração foi executada 30 vezes no ambiente Ubuntu/WSL, que disponibilizava oito processadores lógicos.
+
+Para reduzir a influência de execuções excepcionalmente lentas, adotou-se a mediana dos tempos como referência para o cálculo do speedup e da eficiência.
+
+### Resultados
+
+| Threads | Mediana (s) | Speedup | Eficiência (%) |
+|---|---:|---:|---:|
+| 1 | 0,143343 | 1,000 | 100,00 |
+| 2 | 0,071977 | 1,991 | 99,57 |
+| 4 | 0,035457 | 4,043 | 101,07 |
+| 6 | 0,024720 | 5,799 | 96,64 |
+| 8 | 0,022016 | 6,511 | 81,39 |
+| 12 | 0,020884 | 6,864 | 57,20 |
+| 16 | 0,021122 | 6,786 | 42,42 |
+
+### Discussão
+
+Os resultados demonstram que a paralelização proporcionou uma redução significativa do tempo de execução. O speedup apresentou crescimento próximo ao linear nas configurações iniciais, atingindo 5,799 com seis threads.
+
+Com oito threads, foi obtido um speedup de 6,511 e eficiência de 81,39%. Entretanto, o aumento para 12 e 16 threads proporcionou ganhos adicionais limitados, com speedups de 6,864 e 6,786, respectivamente.
+
+Esse comportamento é compatível com o princípio da Lei de Amdahl, segundo o qual a parcela não paralelizável de um programa limita sua aceleração. Contudo, a fórmula básica não contempla explicitamente todos os custos associados ao gerenciamento de threads, à competição por recursos computacionais e às interferências do ambiente de execução.
+
+Também foram observadas diferenças expressivas entre os tempos mínimos e máximos de algumas configurações, especialmente com 4 e 12 threads, indicando variabilidade nas medições. Por esse motivo, os resultados não permitem identificar com precisão a fração serial do programa nem estabelecer definitivamente a configuração de melhor desempenho.
+
+### Conclusão
+
+O experimento demonstrou que a implementação OpenMP do Mandelbrot apresenta boa escalabilidade inicial, mas os ganhos de desempenho diminuem à medida que a quantidade de threads aumenta.
+
+Considerando os oito processadores lógicos disponibilizados pelo ambiente, os resultados indicam uma região de saturação próxima de oito threads. Embora a configuração com 12 threads tenha apresentado a menor mediana, a diferença em relação às configurações com 8 e 16 threads foi relativamente pequena.
+
+Conclui-se que o aumento da quantidade de threads deve ser acompanhado de avaliações experimentais, pois a utilização de mais recursos paralelos não garante ganhos proporcionais de desempenho.

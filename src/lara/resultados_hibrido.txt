@@ -1,0 +1,10 @@
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.026615 calculo=0.026134 comunicacao=0.003323 desbalanceamento=1.122
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.024459 calculo=0.023898 comunicacao=0.001324 desbalanceamento=1.033
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.025919 calculo=0.025118 comunicacao=0.001011 desbalanceamento=1.013
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.025100 calculo=0.024446 comunicacao=0.001191 desbalanceamento=1.022
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.025248 calculo=0.024690 comunicacao=0.002220 desbalanceamento=1.072
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.024168 calculo=0.023427 comunicacao=0.001050 desbalanceamento=1.014
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.023633 calculo=0.023035 comunicacao=0.000700 desbalanceamento=1.004
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.024188 calculo=0.023465 comunicacao=0.001755 desbalanceamento=1.047
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.027580 calculo=0.026977 comunicacao=0.004708 desbalanceamento=1.182
+versao=hibrido modelo=todos_ciclica recursos=3 largura=400 altura=600 max_iter=1000 checksum=41237493 tempo=0.023666 calculo=0.023073 comunicacao=0.001114 desbalanceamento=1.023
